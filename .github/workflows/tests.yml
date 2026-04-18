@@ -1,7 +1,7 @@
 name: Test Python app
 on:
   push:
-    branches: ['dev']
+    branches: ['dev', 'main']
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -11,10 +11,10 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python - version : '3.12'
-      - name : Install Dependencies
-        run : |
-          python -m pip install --upgrade pip 
+          python-version: '3.12'
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt pytest
-      - name : Run Tests
-        run : python -m pytest tests/
+      - name: Run Tests
+        run: python -m pytest tests/

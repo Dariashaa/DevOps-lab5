@@ -41,8 +41,9 @@ def test_create_user_with_valid_email():
 
     response = client.post("/api/v1/user", json=new_user)
     user_id = response.json()
-    assert user_id == last_id_before+1
     assert response.status_code == 201
+    assert user_id == last_id_before+1
+    
 
 
 def test_create_user_with_invalid_email():
