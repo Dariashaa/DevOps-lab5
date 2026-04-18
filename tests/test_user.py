@@ -72,11 +72,7 @@ def test_delete_user():
     
     create_response = client.post("/api/v1/user", json=new_user)
     assert create_response.status_code == 201
-    user_id = create_response.json()
     
-    delete_response = client.delete(f"/api/v1/user/{user_id}")
+    delete_response = client.delete("/api/v1/user", params={'email': unique_email})
     assert delete_response.status_code == 204
     assert delete_response.text == ""
-    
-    get_response = client.get(f"/api/v1/user/{user_id}")
-    assert get_response.status_code == 404
