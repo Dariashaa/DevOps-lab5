@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import uuid
 
 from src.main import app
 
@@ -18,6 +19,21 @@ users = [
     }
 ]
 
+def test_create_user_success():
+    '''Успешное создание нового пользователя'''
+    unique_email = f"new_{uuid.uuid4().hex[:8]}@example.com"
+    new_user = {
+        'name': 'New User',
+        'email': unique_email
+    }
+    
+    response = client.post("/api/v1/user", json=new_user)
+    
+    assert response.status_code == 201
+    assert response.json()['name'] == new_user['name']
+    assert response.json()['email'] == new_user['email']
+    assert 'id' in response.json()
+
 def test_get_existed_user():
     '''Получение существующего пользователя'''
     response = client.get("/api/v1/user", params={'email': users[0]['email']})
@@ -29,22 +45,6 @@ def test_get_unexisted_user():
     response = client.get("/api/v1/user", params={'email': "nonexistent@mail.com"})
     assert response.status_code == 404
     assert response.json() == {"detail": "User not found"}
-
-def test_create_user_with_valid_email():
-    '''Создание пользователя с уникальной почтой'''
-    new_user = {
-        'name': 'Test User',
-        'email': 'test@example.com'
-    }
-
-    last_id_before = users[-1]['id']
-
-    response = client.post("/api/v1/user", json=new_user)
-    user_id = response.json()
-    assert response.status_code == 201
-    assert user_id == last_id_before+1
-    
-
 
 def test_create_user_with_invalid_email():
     '''Создание пользователя с почтой, которую использует другой пользователь'''
@@ -61,14 +61,20 @@ def test_create_user_with_invalid_email():
 
 def test_delete_user():
     '''Удаление пользователя'''
+    # Сначала создаем уникального пользователя
+    unique_email = f"delete_{uuid.uuid4().hex[:8]}@example.com"
     new_user = {
-        'name': 'Test User',
-        'email': 'test@example.com'
+        'name': 'User To Delete',
+        'email': unique_email
     }
-    response = client.post("/api/v1/user", json=new_user)
-    assert response.status_code == 201
-    delete_response = client.delete("/api/v1/user", params={'email': new_user['email']})
     
+    create_response = client.post("/api/v1/user", json=new_user)
+    assert create_response.status_code == 201
+    user_id = create_response.json()['id']
+    
+    delete_response = client.delete(f"/api/v1/user/{user_id}")
     assert delete_response.status_code == 204
     assert delete_response.text == ""
     
+    get_response = client.get(f"/api/v1/user/{user_id}")
+    assert get_response.status_code == 404
