@@ -28,6 +28,9 @@ def test_create_user_success():
     }
     
     response = client.post("/api/v1/user", json=new_user)
+    user_id = response.json()
+    assert isinstance(user_id, int)
+    assert user_id > 0
     
     assert response.status_code == 201
     assert response.json()['name'] == new_user['name']
